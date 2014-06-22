@@ -22,9 +22,35 @@ class Recipe
   attr_reader :id, :title
 end
 
-class RecipeData
-  def initialize(recipes)
+class User
+  def initialize(id, recipes, name)
+    @id = id
     @recipes = recipes
+    @name = name
+  end
+
+  def print
+    puts "#{@name}"
+  end
+  def print_with_id
+    puts "#{@id}: #{@name}"
+  end
+
+  def self.load(id, recipes, line)
+    self.new(id, recipes, line)
+  end
+
+  attr_reader :id, :name, :recipes
+end
+
+class RecipeData
+  def initialize
+    @users = []
+    @last_user_id = 0
+    @last_recipe_id = 0
+  end
+  def initialize(users)
+    @users = users
   end
 
   # idに対応するrecipeが存在しないときにnilを返却する
@@ -34,26 +60,33 @@ class RecipeData
     end
   end
 
-  # レシピの文字列表現の配列からRecipeDataインスタンスを生成する
-  def self.load(lines)
-    recipes = lines.map.with_index(1) do |line, id|
+  # open_fileから呼ばれるユーティリティ
+  # 改行文字で分割した文字列配列からユーザーデータとレシピデータを読み取る
+  def load(lines)
+    user_line = lines.shift
+    # @last_recipe_id+1からIDを割り振る
+    recipes = lines.map.with_index(@last_recipe_id + 1) do |line, id|
       Recipe.load(id, line)
     end
-    RecipeData.new(recipes)
+    @last_recipe_id = @recipes.last.id
+    # @last_user_id+1からIDを割り振る
+    @users << User.load(@last_user_id + 1, recipes, user_line)
+    @last_user_id = @users.last.id
   end
-  # ファイル名からRecipeDataインスタンスを生成する
-  def self.open_file(file_name)
+  # ファイルからデータを入力してRecipeDataに追加する
+  # ファイルの先頭行はユーザーデータ，それ以降の行はレシピデータとする
+  def open_file(file_name)
     File.open(file_name, 'r') do |f|
       self.load(f.read.each_line.to_a)
     end
   end
 
-  attr_reader :recipes
+  attr_reader :users, :recipes
 end
 
 def main
   if ARGV.size <= 0
-    puts 'usage: ruby recipe.rb fine_name'
+    puts 'usage: ruby recipe.rb file_name'
   else
     recipe_data = RecipeData.open_file(ARGV[0])
     if ARGV.size <= 1
