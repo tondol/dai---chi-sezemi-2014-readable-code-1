@@ -29,11 +29,18 @@ class User
     @name = name
   end
 
+  # idに対応するrecipeが存在しないときにnilを返却する
+  def find_recipe_for_id(id)
+    @recipes.find do |recipe|
+      recipe.id == id
+    end
+  end
+
   def print
-    puts "#{@name}"
+    puts "User => #{@name}"
   end
   def print_with_id
-    puts "#{@id}: #{@name}"
+    puts "User => #{@id}: #{@name}"
   end
 
   def self.load(id, recipes, line)
@@ -44,19 +51,26 @@ class User
 end
 
 class RecipeData
-  def initialize
-    @users = []
+  def initialize(users=[])
+    @users = users
     @last_user_id = 0
     @last_recipe_id = 0
-  end
-  def initialize(users)
-    @users = users
   end
 
   # idに対応するrecipeが存在しないときにnilを返却する
   def find_recipe_for_id(id)
-    @recipes.find do |recipe|
-      recipe.id == id
+    @users.each do |user|
+      recipe = user.recipes.find do |recipe|
+        recipe.id == id
+      end
+      return recipe if recipe
+    end
+    nil
+  end
+  # idに対応するuserが存在しないときにnilを返却する
+  def find_user_for_id(id)
+    @users.find do |user|
+      user.id == id
     end
   end
 
@@ -68,7 +82,7 @@ class RecipeData
     recipes = lines.map.with_index(@last_recipe_id + 1) do |line, id|
       Recipe.load(id, line)
     end
-    @last_recipe_id = @recipes.last.id
+    @last_recipe_id += recipes.size
     # @last_user_id+1からIDを割り振る
     @users << User.load(@last_user_id + 1, recipes, user_line)
     @last_user_id = @users.last.id
@@ -85,18 +99,43 @@ class RecipeData
 end
 
 def main
-  if ARGV.size <= 0
+  if ARGV.empty?
     puts 'usage: ruby recipe.rb file_name'
   else
-    recipe_data = RecipeData.open_file(ARGV[0])
-    if ARGV.size <= 1
-      recipe_data.recipes.each do |recipe|
+    # Integerメソッドは数値の文字列表現でないものが渡されたときに例外を発生させる
+    recipe_id = Integer(ARGV.pop)
+    user_id = Integer(ARGV.pop)
+    file_names = ARGV
+
+    recipe_data = RecipeData.new
+    file_names.each do |file_name|
+      recipe_data.open_file(file_name)
+    end
+
+    if user_id == -1 && recipe_id == -1
+      # all recipes
+      recipe_data.users.each do |user|
+        user.print_with_id
+        user.recipes.each do |recipe|
+          recipe.print_with_id
+        end
+      end
+    elsif user_id == -1
+      # specific recipe
+      recipe = recipe_data.find_recipe_for_id(recipe_id)
+      recipe.print_with_id
+    elsif recipe_id == -1
+      # specific user
+      user = recipe_data.find_user_for_id(user_id)
+      user.print_with_id
+      user.recipes.each do |recipe|
         recipe.print_with_id
       end
     else
-      # Integerメソッドは数値の文字列表現でないものが渡されたときに例外を発生させる
-      recipe_id = Integer(ARGV[1])
-      recipe = recipe_data.find_recipe_for_id(recipe_id)
+      # specific user and recipe
+      user = recipe_data.find_user_for_id(user_id)
+      recipe = user.find_recipe_for_id(recipe_id)
+      user.print_with_id
       recipe.print_with_id
     end
   end
