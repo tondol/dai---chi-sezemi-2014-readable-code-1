@@ -6,8 +6,8 @@ def main
   else
     recipe_data = open_file(ARGV[0])
     if ARGV[1].nil?
-      recipe_data.each_with_index do |line, i|
-        print_title_with_id(i+1, line)
+      recipe_data.each_line.with_index(1) do |line, i|
+        print_title_with_id(i, line)
       end
     else
       recipe_id = ARGV[1].to_i
