@@ -10,6 +10,8 @@ end
 
 recipe_data = open_file(ARGV[0])
 
-print_title recipe_data.read
+recipe_data.each do |line|
+  puts line
+end
 
 recipe_data.close
