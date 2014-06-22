@@ -1,18 +1,19 @@
 # リーダブルコード
 
 ## 開発言語
+
 - ruby
 
 ## Usage
 
-sh```
+```sh
 $ git clone https://github.com/dai---chi/dai---chi-sezemi-2014-readable-code-1
 $ cd dai---chi-sezemi-2014-readable-code-1
 ```
 
 ### spec3-5
 
-sh```
+```sh
 $ cat recipe-data.txt
 オムライス
 親子丼
@@ -25,7 +26,7 @@ $ ruby recipe.rb recipe-data.txt
 
 ### spec6-7
 
-sh```
+```sh
 $ ruby recipe.rb recipe-data.txt 2
 2: 親子丼
 $ ruby recipe.rb recipe-data.txt
@@ -42,7 +43,7 @@ $ ruby recipe.rb recipe-data.txt
 
 spec8-11に対応した時点でspec7以前の仕様は満たさなくなっているので注意すること。
 
-sh```
+```sh
 $ cat recipe-data1.txt
 kou
 オムライス http://cookpad.com/recipe/2653946
